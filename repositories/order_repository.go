@@ -3,11 +3,10 @@ package repositories
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
 	"os"
 	"sync"
 
-	"../models"
+	"testapp/models"
 )
 
 var (

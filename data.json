@@ -1,0 +1,36 @@
+{
+	"orders": [
+		{
+			"id": "order1",
+			"headerFields": {
+				"field1": "value1",
+				"field2": "value2"
+			}
+		},
+		{
+			"id": "order2",
+			"headerFields": {
+				"field1": "value3",
+				"field2": "value4"
+			}
+		}
+	],
+	"orderConfirmations": [
+		{
+			"id": "confirmation1",
+			"orderId": "order1",
+			"headerFields": {
+				"field1": "value1",
+				"field2": "value2"
+			}
+		},
+		{
+			"id": "confirmation2",
+			"orderId": "order2",
+			"headerFields": {
+				"field1": "value3",
+				"field2": "value4"
+			}
+		}
+	]
+}

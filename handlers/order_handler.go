@@ -6,8 +6,10 @@ import (
 	"net/http"
 	"time"
 
+	"testapp/models"
+	"testapp/repositories"
+
 	"github.com/gorilla/mux"
-	"../repositories"
 )
 
 func GetOrderConfirmationHandler(w http.ResponseWriter, r *http.Request) {
@@ -17,29 +19,31 @@ func GetOrderConfirmationHandler(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	orderConfirmationChan := make(chan *repositories.OrderConfirmation)
-	orderChan := make(chan *repositories.Order)
+	orderConfirmationChan := make(chan *models.OrderConfirmation)
+	orderChan := make(chan *models.Order)
 
 	go func() {
-		orderConfirmation, err := repositories.GetOrderConfirmation(id)
-		if err != nil {
-			orderConfirmationChan <- nil
-			return
+		for _, oc := range repositories.OrderConfirmations {
+			if oc.ID == id {
+				orderConfirmationChan <- &oc
+				return
+			}
 		}
-		orderConfirmationChan <- orderConfirmation
+		orderConfirmationChan <- nil
 	}()
 
 	go func() {
-		order, err := repositories.GetOrder(id)
-		if err != nil {
-			orderChan <- nil
-			return
+		for _, order := range repositories.Orders {
+			if order.ID == id {
+				orderChan <- &order
+				return
+			}
 		}
-		orderChan <- order
+		orderChan <- nil
 	}()
 
-	var orderConfirmation *repositories.OrderConfirmation
-	var order *repositories.Order
+	var orderConfirmation *models.OrderConfirmation
+	var order *models.Order
 
 	select {
 	case orderConfirmation = <-orderConfirmationChan:
@@ -61,8 +65,8 @@ func GetOrderConfirmationHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := struct {
-		OrderConfirmation *repositories.OrderConfirmation `json:"orderConfirmation"`
-		Order             *repositories.Order             `json:"order"`
+		OrderConfirmation *models.OrderConfirmation `json:"orderConfirmation"`
+		Order             *models.Order             `json:"order"`
 	}{
 		OrderConfirmation: orderConfirmation,
 		Order:             order,

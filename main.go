@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -28,23 +29,25 @@ var orderConfirmations []OrderConfirmation
 func loadData() {
 	file, err := os.Open("data.json")
 	if err != nil {
-		fmt.Println("Error opening data file:", err)
+		log.Println("Error opening data file:", err)
 		return
 	}
 	defer file.Close()
 
+	var data struct {
+		Orders             []Order             `json:"orders"`
+		OrderConfirmations []OrderConfirmation `json:"orderConfirmations"`
+	}
+
 	decoder := json.NewDecoder(file)
-	err = decoder.Decode(&orders)
+	err = decoder.Decode(&data)
 	if err != nil {
-		fmt.Println("Error decoding orders:", err)
+		log.Println("Error decoding data:", err)
 		return
 	}
 
-	err = decoder.Decode(&orderConfirmations)
-	if err != nil {
-		fmt.Println("Error decoding order confirmations:", err)
-		return
-	}
+	orders = data.Orders
+	orderConfirmations = data.OrderConfirmations
 }
 
 func getOrderConfirmationHandler(w http.ResponseWriter, r *http.Request) {
@@ -100,15 +103,19 @@ func getOrderConfirmationHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := struct {
-		OrderConfirmation *Order `json:"orderConfirmation"`
-		Order             *Order `json:"order"`
+		OrderConfirmation *OrderConfirmation `json:"orderConfirmation"`
+		Order             *Order             `json:"order"`
 	}{
 		OrderConfirmation: orderConfirmation,
 		Order:             order,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	err := json.NewEncoder(w).Encode(response)
+	if err != nil {
+		log.Println("Error encoding response:", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	}
 }
 
 func main() {
@@ -118,6 +125,8 @@ func main() {
 	r.HandleFunc("/api/order-confirmation/{id}", getOrderConfirmationHandler).Methods("GET")
 
 	http.Handle("/", r)
-	fmt.Println("Server started at :8080")
-	http.ListenAndServe(":8080", nil)
+	fmt.Println("Server started at :8051")
+	if err := http.ListenAndServe(":8051", nil); err != nil {
+		log.Fatalf("Server failed to start: %v", err)
+	}
 }
