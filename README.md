@@ -1,2 +1,1 @@
-# web-app-go
-A web app in Go with JSON data storage and Microsoft Fluent UI styling
+This repository is empty. Any task executed on it should be considered a new capability and needs to be created.
